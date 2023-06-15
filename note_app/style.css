@@ -12,7 +12,7 @@ body{
     margin: 50px;
     display: grid;
     gap: 15px;
-    grid-template-columns: repeat(auto-fill,265xp);
+    grid-template-columns: repeat(auto-fill, 265px);
 }
 .wrapper li{
     height: 250px;
@@ -131,6 +131,11 @@ cursor: pointer;
 .popup-box, .popup-box .popup{
     opacity: 0;
     pointer-events: none;
+}
+.popup-box.show, .popup-box .popup{
+    opacity: 1;
+    pointer-events: auto;
+    transition: all 0.25s ease;
 }
 .popup .content{
     background: white;
