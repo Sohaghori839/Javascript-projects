@@ -1,68 +1,70 @@
 const fromText = document.querySelector(".from-text"),
-    toText = document.querySelector(".to-text"),
-    exchangeIcon = document.querySelector(".exchange"),
-    selectTag = document.querySelectorAll("select"),
-    translateBtn = document.querySelector("button");
-icons = document.querySelectorAll(".row i")
+toText = document.querySelector(".to-text"),
+exchageIcon = document.querySelector(".exchange"),
+selectTag = document.querySelectorAll("select"),
+icons = document.querySelectorAll(".row i");
+translateBtn = document.querySelector("button"),
 
-// Selector code start
 selectTag.forEach((tag, id) => {
-    for (const country_code in countries) {
-
-        let selected;
-        if (id == 0 && country_code == "en-GB") {
-            selected = "selected";
-        } else if (id == 1 && country_code == "ur-PK") {
-            selected = "selected";
-        }
-        let option = `<option value="${country_code}" ${selected}>${countries[country_code]}</option>`;
-        tag.insertAdjacentHTML("beforeend", option);//adding options tag inside selete tag 
+    for (let country_code in countries) {
+        let selected = id == 0 ? country_code == "en-GB" ? "selected" : "" : country_code == "ur-PK" ? "selected" : "";
+        let option = `<option ${selected} value="${country_code}">${countries[country_code]}</option>`;
+        tag.insertAdjacentHTML("beforeend", option);
     }
 });
-// exchangeicon code start
-// exchanging textarea and select tag values
-exchangeIcon.addEventListener("click", () => {
+
+exchageIcon.addEventListener("click", () => {
     let tempText = fromText.value,
-        tempLang = selectTag[0].value;
+    tempLang = selectTag[0].value;
     fromText.value = toText.value;
-    selectTag[0].value = selectTag[1].value;
     toText.value = tempText;
+    selectTag[0].value = selectTag[1].value;
     selectTag[1].value = tempLang;
 });
 
-// transation code start 
+fromText.addEventListener("keyup", () => {
+    if(!fromText.value) {
+        toText.value = "";
+    }
+});
+
 translateBtn.addEventListener("click", () => {
-    let text = fromText.value,
-        translateFrom = selectTag[0].value, //getting fromselect tag value
-        translateTo = selectTag[1].value; //getting toselect tag value
-    // its a free api so sometimes translate text may not be accurate
+    let text = fromText.value.trim(),
+    translateFrom = selectTag[0].value,
+    translateTo = selectTag[1].value;
+    if(!text) return;
+    toText.setAttribute("placeholder", "Translating...");
     let apiUrl = `https://api.mymemory.translated.net/get?q=${text}&langpair=${translateFrom}|${translateTo}`;
-    // fetching api response and return it with parsing into js obj
-    // and in another then mathod receiving that obj
     fetch(apiUrl).then(res => res.json()).then(data => {
-        console.log(data);
-        toText.vlaue = data.responseData.translatedText;
+        toText.value = data.responseData.translatedText;
+        data.matches.forEach(data => {
+            if(data.id === 0) {
+                toText.value = data.translation;
+            }
+        });
+        toText.setAttribute("placeholder", "Translation");
     });
 });
 
 icons.forEach(icon => {
-    icon.addEventListener("click", ({ target }) => {
-        if (target.classList.contains("fa-copy")) {
-            if (target.id == "from") {
+    icon.addEventListener("click", ({target}) => {
+        if(!fromText.value || !toText.value) return;
+        if(target.classList.contains("fa-copy")) {
+            if(target.id == "from") {
                 navigator.clipboard.writeText(fromText.value);
             } else {
                 navigator.clipboard.writeText(toText.value);
             }
         } else {
             let utterance;
-            if (target.id == "from") {
+            if(target.id == "from") {
                 utterance = new SpeechSynthesisUtterance(fromText.value);
                 utterance.lang = selectTag[0].value;
             } else {
                 utterance = new SpeechSynthesisUtterance(toText.value);
                 utterance.lang = selectTag[1].value;
             }
-            speechSynthesis.speak(utterance); //speak the passed utterance
+            speechSynthesis.speak(utterance);
         }
     });
 });
